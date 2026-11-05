@@ -95,40 +95,45 @@ class ApexTpuWorkbench(tk.Tk):
         scroll_frame = tk.Frame(canvas, bg=BG_DARK)
 
         scroll_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+        canvas_win = canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
+        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_win, width=e.width))
         canvas.configure(yscrollcommand=scroll_y.set)
 
-        canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        canvas.pack(side="left", fill="both", expand=True, padx=6, pady=6)
         scroll_y.pack(side="right", fill="y")
 
-        # Load Architecture Diagram
+        # Mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        canvas.bind("<Enter>", lambda _: canvas.bind_all("<MouseWheel>", _on_mousewheel))
+        canvas.bind("<Leave>", lambda _: canvas.unbind_all("<MouseWheel>"))
+
+        # Load Architecture Diagram (Balanced height to fit within screen)
         diag_path = os.path.join(PROJECT_ROOT, "docs", "images", "apex_tpu_architecture.png")
         if os.path.exists(diag_path):
             img = Image.open(diag_path)
-            img.thumbnail((1100, 600), Image.Resampling.LANCZOS)
+            img.thumbnail((780, 390), Image.Resampling.LANCZOS)
             self.tk_arch_img = ImageTk.PhotoImage(img)
             img_lbl = tk.Label(scroll_frame, image=self.tk_arch_img, bg=BG_DARK)
-            img_lbl.pack(pady=10)
+            img_lbl.pack(pady=(4, 6))
 
-        # Specs grid cards
+        # Specs cards arranged in 1 horizontal row (4 columns) to fit cleanly on screen
         cards_frame = tk.Frame(scroll_frame, bg=BG_DARK)
-        cards_frame.pack(fill="x", pady=10, padx=20)
+        cards_frame.pack(fill="x", pady=(0, 8), padx=12)
 
         specs = [
-            ("Core Microarchitecture", "2D Systolic Processing Grid (8x8 = 64 PEs)\nWeight-Stationary (WS) spatial dataflow\n64 signed INT8 MACs/cycle throughput", COLOR_CYAN),
-            ("Memory Hierarchy", "2KB True Dual-Port Unified Activation Buffer\n512-bit Preload Stationary Weight Buffer\nAMBA AXI4 Master DMA Burst Interface", COLOR_EMERALD),
-            ("Vector Unit (VPU)", "32-bit Signed Column Bias Addition\nPiecewise Linear Transformer GELU Engine\nINT32 to INT8 Quantization with Saturation", COLOR_ROSE),
-            ("ASIC Signoff (Nangate 45nm)", "Total Standard Cells: 173,758 cells\nTotal Silicon Area: 293,491.37 µm² (0.293 mm²)\nNormalized Complexity: 367.8 kGE", COLOR_AMBER)
+            ("Core Microarchitecture", "• 8x8 2D Systolic Grid (64 PEs)\n• Weight-Stationary (WS) dataflow\n• 64 signed INT8 MACs/cycle", COLOR_CYAN),
+            ("Memory Hierarchy", "• 2KB Dual-Port Synchronous UB\n• 512b Preload Stationary WB\n• AMBA AXI4 Master DMA Burst", COLOR_EMERALD),
+            ("Vector Unit (VPU)", "• 32-bit Column Bias Addition\n• PWL Transformer GELU / ReLU\n• INT32 -> INT8 Saturation", COLOR_ROSE),
+            ("ASIC Signoff (45nm)", "• 173,758 Standard Cells\n• 293,491 µm² (0.293 mm²)\n• 367.8 kGE Complexity", COLOR_AMBER)
         ]
 
         for i, (title, desc, col) in enumerate(specs):
-            card = tk.Frame(cards_frame, bg=BG_CARD, padx=16, pady=12, highlightbackground=col, highlightthickness=1)
-            card.grid(row=i//2, column=i%2, padx=10, pady=8, sticky="nsew")
-            tk.Label(card, text=title, font=(FONT_FAMILY, 11, "bold"), fg=col, bg=BG_CARD).pack(anchor="w")
-            tk.Label(card, text=desc, font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD, justify="left").pack(anchor="w", pady=(6, 0))
-
-        cards_frame.columnconfigure(0, weight=1)
-        cards_frame.columnconfigure(1, weight=1)
+            card = tk.Frame(cards_frame, bg=BG_CARD, padx=12, pady=10, highlightbackground=col, highlightthickness=1)
+            card.grid(row=0, column=i, padx=5, sticky="nsew")
+            tk.Label(card, text=title, font=(FONT_FAMILY, 10, "bold"), fg=col, bg=BG_CARD).pack(anchor="w")
+            tk.Label(card, text=desc, font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD, justify="left").pack(anchor="w", pady=(4, 0))
+            cards_frame.columnconfigure(i, weight=1)
 
     # -------------------------------------------------------------------------
     # TAB 2: INTERACTIVE MATRIX MULTIPLIER
