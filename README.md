@@ -2,12 +2,34 @@
 
 [![CI Verification](https://img.shields.io/badge/RTL%20Verification-100%25%20Bit--Exact-brightgreen)](#)
 [![ASIC Synthesis](https://img.shields.io/badge/ASIC%20Library-Nangate%2045nm-blue)](#)
+[![Physical Design](https://img.shields.io/badge/Physical%20Design-OpenROAD%20P%26R-purple)](#)
+[![Tapeout](https://img.shields.io/badge/Tapeout%20GDSII-179.2%20kCells-success)](#)
 [![Complexity](https://img.shields.io/badge/Gate%20Equivalents-367.8%20kGE-orange)](#)
-[![Throughput](https://img.shields.io/badge/Peak%20Throughput-64%20MACs%2Fcycle-purple)](#)
+[![Throughput](https://img.shields.io/badge/Peak%20Throughput-64%20MACs%2Fcycle-red)](#)
 
 Apex-TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware accelerator core implementing a Weight-Stationary (WS) spatial dataflow for integer matrix multiplication (GEMM) and Transformer inference workloads. Designed in SystemVerilog/Verilog-2005, the architecture features an $8 \times 8$ grid of 64 multiply-accumulate Processing Elements (PEs), dedicated hardware diagonal skewing and deskewing units, a 2KB true dual-port Unified Activation Buffer (UB), an autonomous 64-bit AMBA AXI4 Master DMA burst engine, and a Vector Processing Unit (VPU) supporting Piecewise Linear Transformer GELU and dynamic INT8 quantization with symmetric saturation.
 
-Synthesized to the **Nangate 45nm Open Cell Library**, the core achieves **173,758 standard cells**, **293,491.37 $\mu m^2$ ($0.293 \text{ mm}^2$) core silicon area**, and **367.8 kGE** normalized gate complexity.
+---
+
+## 🏛️ Physical Silicon Tapeout & GDSII Signoff (Nangate 45nm)
+
+<p align="center">
+  <img src="docs/apex_tpu_top_layout.png" alt="Apex-TPU Full-Die Layout" width="49%">
+  <img src="docs/systolic_array_layout.png" alt="Systolic Array Core Layout" width="49%">
+</p>
+<p align="center"><em>Full-Die Tapeout Layouts (Rendered via KLayout). Left: Full Apex-TPU Accelerator Die (179,209 placed cells, 723×723 µm, 578 mW). Right: Dedicated 8×8 Systolic Array Core (46,271 cells, 355×355 µm, 142.6 mW).</em></p>
+
+| Physical Signoff Metric | Full Apex-TPU Top Core | Systolic Array Sub-Core | Signoff Engine |
+| :--- | :--- | :--- | :--- |
+| **Technology Node** | Nangate 45nm (FreePDK45, 10 Metal Layers) | Nangate 45nm (FreePDK45) | OpenROAD Flow |
+| **Die Dimensions** | **$723.35 \times 723.35\,\mu m$** ($0.523\text{ mm}^2$) | **$355.05 \times 355.05\,\mu m$** ($0.126\text{ mm}^2$) | OpenROAD Floorplan Init |
+| **Placed & Legalized Cells** | **179,209 instances (100% Legalized)** | **46,271 instances (100% Legalized)** | OpenROAD `DPL` Engine |
+| **Core Utilization** | **60.0%** (Optimal Congestion & Routability) | **55.0%** | RePlAce Global Placer |
+| **Clock Tree Synthesis (CTS)**| **8-Level Balanced Tree** (3,575 buffers, 27,891 sinks) | **H-Tree** (503 buffers, 8,192 sinks) | TritonCTS (OpenSTA) |
+| **Total Power @ 100MHz** | **578.0 mW** (111 mW seq, 438 mW comb, 28.8 mW clock) | **142.6 mW** (34.2 mW seq, 98.4 mW comb, 8.5 mW clock) | OpenSTA Power Analyzer |
+| **Power Distribution Network** | M1 Rails, M4 Vert (56µm), M7 Horiz (30µm) | M1 Rails, M4 Vert (56µm), M7 Horiz (30µm) | PDN Generator |
+| **GDSII Stream File** | [`apex_tpu_top.gds`](pnr/apex_tpu_top.gds) (**16.55 MB**) | [`systolic_array.gds`](pnr/systolic_array.gds) (**5.12 MB**) | KLayout Streamout |
+
 
 ---
 
