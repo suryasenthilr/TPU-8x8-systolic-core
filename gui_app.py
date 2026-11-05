@@ -86,6 +86,11 @@ class ApexTpuWorkbench(tk.Tk):
         self.notebook.add(tab_asic, text=" Nangate 45nm ASIC Metrics ")
         self._init_asic_tab(tab_asic)
 
+        # Tab 5: Physical Design & GDSII Layout
+        tab_pnr = tk.Frame(self.notebook, bg=BG_DARK)
+        self.notebook.add(tab_pnr, text=" 🔬 Physical Design & GDSII ")
+        self._init_pnr_tab(tab_pnr)
+
     # -------------------------------------------------------------------------
     # TAB 1: ARCHITECTURE (Side-by-Side Split View for Large Readable Visuals)
     # -------------------------------------------------------------------------
@@ -382,6 +387,209 @@ class ApexTpuWorkbench(tk.Tk):
 
             for col_idx, val in enumerate(r_data):
                 tk.Label(tbl_frame, text=val, font=(FONT_FAMILY, 9, font_w), fg=fg_col, bg=bg_col, padx=4, pady=3).grid(row=row_idx, column=col_idx, sticky="w", padx=6, pady=2)
+
+    # -------------------------------------------------------------------------
+    # TAB 5: PHYSICAL DESIGN & GDSII LAYOUT
+    # -------------------------------------------------------------------------
+    def _init_pnr_tab(self, parent):
+        sf = tk.Frame(parent, bg=BG_DARK, padx=16, pady=12)
+        sf.pack(fill="both", expand=True)
+
+        # Top Banner
+        b_frame = tk.Frame(sf, bg=BG_CARD, padx=16, pady=10, highlightbackground=COLOR_EMERALD, highlightthickness=1)
+        b_frame.pack(fill="x", pady=(0, 12))
+
+        b_top = tk.Frame(b_frame, bg=BG_CARD)
+        b_top.pack(fill="x")
+        tk.Label(b_top, text="PHYSICAL DESIGN & GDSII SILICON SIGNOFF", font=(FONT_FAMILY, 13, "bold"), fg=COLOR_EMERALD, bg=BG_CARD).pack(side="left")
+        status_lbl = tk.Label(b_top, text="● 100% ROUTED & LEGALIZED | DRC/LVS CLEAN | TAPE-OUT STREAM",
+                              font=(FONT_FAMILY, 9, "bold"), fg=COLOR_EMERALD, bg=BG_ACCENT, padx=8, pady=3)
+        status_lbl.pack(side="right")
+
+        tk.Label(b_frame, text="Backend Toolchain: OpenROAD 26Q2 + FastRoute + TritonCTS | Stream Merge: KLayout 0.30 | Library: Nangate 45nm",
+                 font=(FONT_FAMILY, 9), fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(4, 0))
+
+        # Split Container: Left = Interactive Canvas Viewport, Right = Physical Signoff & Actions
+        split = tk.Frame(sf, bg=BG_DARK)
+        split.pack(fill="both", expand=True)
+
+        # LEFT PANE: Chip Layout Image Viewer
+        left_box = tk.LabelFrame(split, text=" Silicon Layout Floorplan & Standard Cell Geometry ",
+                                 bg=BG_CARD, fg=COLOR_CYAN, font=(FONT_FAMILY, 10, "bold"), padx=10, pady=10)
+        left_box.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
+        ctrl_bar = tk.Frame(left_box, bg=BG_CARD)
+        ctrl_bar.pack(fill="x", pady=(0, 8))
+
+        tk.Label(ctrl_bar, text="View Macro:", font=(FONT_FAMILY, 9, "bold"), fg=TEXT_WHITE, bg=BG_CARD).pack(side="left", padx=(0, 6))
+        self.pnr_view_var = tk.StringVar(value="Full Chip Top (apex_tpu_top: 179k cells, 723x723 µm)")
+        views = [
+            "Full Chip Top (apex_tpu_top: 179k cells, 723x723 µm)",
+            "Systolic Array Core (systolic_array: 46k cells, 355x355 µm)"
+        ]
+        self.view_combo = ttk.Combobox(ctrl_bar, textvariable=self.pnr_view_var, values=views, state="readonly", width=52)
+        self.view_combo.pack(side="left", padx=4)
+        self.view_combo.bind("<<ComboboxSelected>>", self._on_pnr_view_change)
+
+        # Canvas for layout image
+        self.pnr_canvas = tk.Canvas(left_box, bg="#050811", highlightthickness=1, highlightbackground=BG_ACCENT)
+        self.pnr_canvas.pack(fill="both", expand=True)
+
+        # RIGHT PANE: Metrics & Interactive Actions
+        right_box = tk.Frame(split, bg=BG_DARK, width=420)
+        right_box.pack(side="right", fill="both")
+        right_box.pack_propagate(False)
+
+        # Metrics Card 1: Silicon Real Estate
+        c1 = tk.LabelFrame(right_box, text=" Silicon Footprint & Density ", bg=BG_CARD, fg=COLOR_CYAN,
+                           font=(FONT_FAMILY, 9, "bold"), padx=12, pady=8)
+        c1.pack(fill="x", pady=(0, 8))
+
+        self.lbl_pnr_die = tk.Label(c1, text="• Die Dimension: 723.35 µm × 723.35 µm (0.523 mm²)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_die.pack(anchor="w", pady=1)
+        self.lbl_pnr_cells = tk.Label(c1, text="• Placed Instances: 179,209 standard cells (100% legalized)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_cells.pack(anchor="w", pady=1)
+        self.lbl_pnr_util = tk.Label(c1, text="• Core Utilization: 60.0% (Free area: 504,788 µm²)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_util.pack(anchor="w", pady=1)
+        self.lbl_pnr_gds = tk.Label(c1, text="• GDSII Stream: apex_tpu_top.gds (16.55 MB tape-out binary)", font=(FONT_FAMILY, 9), fg=COLOR_EMERALD, bg=BG_CARD)
+        self.lbl_pnr_gds.pack(anchor="w", pady=1)
+
+        # Metrics Card 2: Power Signoff
+        c2 = tk.LabelFrame(right_box, text=" ASIC Power Signoff (OpenSTA) ", bg=BG_CARD, fg=COLOR_AMBER,
+                           font=(FONT_FAMILY, 9, "bold"), padx=12, pady=8)
+        c2.pack(fill="x", pady=(0, 8))
+
+        self.lbl_pnr_pwr = tk.Label(c2, text="• Total Power: 578 mW @ 100MHz (Nangate 45nm)", font=(FONT_FAMILY, 9, "bold"), fg=COLOR_AMBER, bg=BG_CARD)
+        self.lbl_pnr_pwr.pack(anchor="w", pady=1)
+        self.lbl_pnr_seq = tk.Label(c2, text="• Sequential Power: 111 mW (19.2%)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_seq.pack(anchor="w", pady=1)
+        self.lbl_pnr_comb = tk.Label(c2, text="• Combinational Power: 438 mW (75.8%)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_comb.pack(anchor="w", pady=1)
+        self.lbl_pnr_clk_pwr = tk.Label(c2, text="• Clock Network Power: 28.8 mW (5.0%)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_clk_pwr.pack(anchor="w", pady=1)
+        self.lbl_pnr_leak = tk.Label(c2, text="• Leakage Power: 6.57 mW (1.1%)", font=(FONT_FAMILY, 9), fg=TEXT_MUTED, bg=BG_CARD)
+        self.lbl_pnr_leak.pack(anchor="w", pady=1)
+
+        # Metrics Card 3: Clock & PDN Architecture
+        c3 = tk.LabelFrame(right_box, text=" CTS & PDN Power Straps ", bg=BG_CARD, fg=COLOR_INDIGO,
+                           font=(FONT_FAMILY, 9, "bold"), padx=12, pady=8)
+        c3.pack(fill="x", pady=(0, 8))
+
+        self.lbl_pnr_cts = tk.Label(c3, text="• Clock Sinks: 27,891 flip-flops (TritonCTS 8 Levels)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_cts.pack(anchor="w", pady=1)
+        self.lbl_pnr_buf = tk.Label(c3, text="• Clock Buffers: 3,575 buffers inserted (CLKBUF_X1..X3)", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD)
+        self.lbl_pnr_buf.pack(anchor="w", pady=1)
+        tk.Label(c3, text="• PDN M1 Rails: 0.17 µm stdcell pitch rails", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD).pack(anchor="w", pady=1)
+        tk.Label(c3, text="• PDN M4 Straps: 0.48 µm width @ 56.0 µm pitch", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD).pack(anchor="w", pady=1)
+        tk.Label(c3, text="• PDN M7 Straps: 1.40 µm width @ 30.0 µm pitch", font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD).pack(anchor="w", pady=1)
+
+        # Card 4: Interactive Actions
+        c4 = tk.LabelFrame(right_box, text=" Live Interactive Physical Tools ", bg=BG_CARD, fg=COLOR_CYAN,
+                           font=(FONT_FAMILY, 9, "bold"), padx=12, pady=10)
+        c4.pack(fill="x")
+
+        btn_klayout = tk.Button(c4, text="🔬 Launch Live GDSII in KLayout (GUI)", font=(FONT_FAMILY, 9, "bold"),
+                                bg=COLOR_EMERALD, fg="#042f2e", activebackground="#6ee7b7", pady=6, cursor="hand2",
+                                command=self._launch_klayout_viewer)
+        btn_klayout.pack(fill="x", pady=3)
+
+        btn_log = tk.Button(c4, text="📜 View OpenROAD P&R Signoff Log", font=(FONT_FAMILY, 9, "bold"),
+                            bg=COLOR_CYAN, fg="#082f49", activebackground="#7dd3fc", pady=6, cursor="hand2",
+                            command=self._view_pnr_log)
+        btn_log.pack(fill="x", pady=3)
+
+        btn_dir = tk.Button(c4, text="📁 Open P&R Files Directory", font=(FONT_FAMILY, 9),
+                            bg=BG_ACCENT, fg=TEXT_WHITE, activebackground=BG_CARD, pady=4, cursor="hand2",
+                            command=self._open_pnr_dir)
+        btn_dir.pack(fill="x", pady=3)
+
+        # Initial layout image render
+        self.after(200, self._render_pnr_canvas)
+
+    def _on_pnr_view_change(self, event=None):
+        choice = self.pnr_view_var.get()
+        if "Systolic" in choice:
+            self.lbl_pnr_die.config(text="• Die Dimension: 355.05 µm × 355.05 µm (0.126 mm²)")
+            self.lbl_pnr_cells.config(text="• Placed Instances: 46,271 cells (64 MAC PEs, 100% legalized)")
+            self.lbl_pnr_util.config(text="• Core Utilization: 55.0% (Core area: 118,766 µm²)")
+            self.lbl_pnr_gds.config(text="• GDSII Stream: systolic_array.gds (5.12 MB tape-out binary)")
+            self.lbl_pnr_pwr.config(text="• Total Power: 142.6 mW @ 100MHz (Nangate 45nm)")
+            self.lbl_pnr_seq.config(text="• Sequential Power: 34.2 mW (24.0%)")
+            self.lbl_pnr_comb.config(text="• Combinational Power: 98.4 mW (69.0%)")
+            self.lbl_pnr_clk_pwr.config(text="• Clock Network Power: 8.5 mW (6.0%)")
+            self.lbl_pnr_leak.config(text="• Leakage Power: 1.5 mW (1.0%)")
+            self.lbl_pnr_cts.config(text="• Clock Sinks: 8,192 flip-flops (Balanced TritonCTS)")
+            self.lbl_pnr_buf.config(text="• Clock Buffers: 503 buffers inserted (CLKBUF_X1..X3)")
+        else:
+            self.lbl_pnr_die.config(text="• Die Dimension: 723.35 µm × 723.35 µm (0.523 mm²)")
+            self.lbl_pnr_cells.config(text="• Placed Instances: 179,209 standard cells (100% legalized)")
+            self.lbl_pnr_util.config(text="• Core Utilization: 60.0% (Free area: 504,788 µm²)")
+            self.lbl_pnr_gds.config(text="• GDSII Stream: apex_tpu_top.gds (16.55 MB tape-out binary)")
+            self.lbl_pnr_pwr.config(text="• Total Power: 578 mW @ 100MHz (Nangate 45nm)")
+            self.lbl_pnr_seq.config(text="• Sequential Power: 111 mW (19.2%)")
+            self.lbl_pnr_comb.config(text="• Combinational Power: 438 mW (75.8%)")
+            self.lbl_pnr_clk_pwr.config(text="• Clock Network Power: 28.8 mW (5.0%)")
+            self.lbl_pnr_leak.config(text="• Leakage Power: 6.57 mW (1.1%)")
+            self.lbl_pnr_cts.config(text="• Clock Sinks: 27,891 flip-flops (TritonCTS 8 Levels)")
+            self.lbl_pnr_buf.config(text="• Clock Buffers: 3,575 buffers inserted (CLKBUF_X1..X3)")
+        self._render_pnr_canvas()
+
+    def _render_pnr_canvas(self):
+        choice = self.pnr_view_var.get()
+        if "Systolic" in choice:
+            img_path = os.path.join(PROJECT_ROOT, "pnr", "systolic_array_layout.png")
+        else:
+            img_path = os.path.join(PROJECT_ROOT, "pnr", "apex_tpu_top_layout.png")
+
+        if not os.path.exists(img_path):
+            self.pnr_canvas.delete("all")
+            self.pnr_canvas.create_text(250, 250, text=f"Layout image not found:\n{img_path}", fill=COLOR_ROSE, font=(FONT_FAMILY, 11))
+            return
+
+        w = self.pnr_canvas.winfo_width()
+        h = self.pnr_canvas.winfo_height()
+        if w < 50 or h < 50:
+            w, h = 600, 600
+
+        try:
+            im = Image.open(img_path)
+            im_resized = im.resize((w, h), Image.Resampling.LANCZOS)
+            self._tk_layout_img = ImageTk.PhotoImage(im_resized)
+            self.pnr_canvas.delete("all")
+            self.pnr_canvas.create_image(w // 2, h // 2, image=self._tk_layout_img)
+        except Exception as e:
+            self.pnr_canvas.delete("all")
+            self.pnr_canvas.create_text(250, 250, text=f"Render error: {e}", fill=COLOR_ROSE, font=(FONT_FAMILY, 10))
+
+    def _launch_klayout_viewer(self):
+        choice = self.pnr_view_var.get()
+        gds_name = "systolic_array.gds" if "Systolic" in choice else "apex_tpu_top.gds"
+        wsl_path = f"/mnt/c/Users/surya/OneDrive/Documents/COLLEGE_RESEARCH/apex-tpu/pnr/{gds_name}"
+        cmd = f"wsl klayout {wsl_path}"
+        threading.Thread(target=lambda: subprocess.run(cmd, shell=True), daemon=True).start()
+        messagebox.showinfo("KLayout Launched", f"Launching interactive KLayout viewer for:\n{gds_name}\n\nRendering multi-layer GDSII stream...")
+
+    def _view_pnr_log(self):
+        log_path = os.path.join(PROJECT_ROOT, "pnr", "pnr_top.log")
+        if not os.path.exists(log_path):
+            messagebox.showwarning("Log Not Found", f"Log file not found: {log_path}")
+            return
+
+        top = tk.Toplevel(self)
+        top.title("OpenROAD Physical Design Log — apex_tpu_top")
+        top.geometry("900x650")
+        top.configure(bg=BG_DARK)
+
+        txt = scrolledtext.ScrolledText(top, bg="#050811", fg="#a6accd", font=("Consolas", 9), insertbackground=COLOR_CYAN)
+        txt.pack(fill="both", expand=True, padx=10, pady=10)
+
+        with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+            txt.insert("1.0", f.read())
+        txt.config(state="disabled")
+
+    def _open_pnr_dir(self):
+        pnr_dir = os.path.join(PROJECT_ROOT, "pnr")
+        os.startfile(pnr_dir)
 
 if __name__ == "__main__":
     app = ApexTpuWorkbench()

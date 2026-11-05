@@ -830697,34 +830697,34 @@ module \$paramod\deskew_unit\ARRAY_SIZE=s32'00000000000000000000000000001000 (cl
   wire [31:0] \gen_deskew_col[0].gen_col_delay.delay_pipe[4] ;
   wire [31:0] \gen_deskew_col[0].gen_col_delay.delay_pipe[5] ;
   wire [31:0] \gen_deskew_col[0].gen_col_delay.delay_pipe[6] ;
-  wire signed [31:0] \gen_deskew_col[0].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[0].gen_col_delay.j ;
   wire [31:0] \gen_deskew_col[1].gen_col_delay.delay_pipe[0] ;
   wire [31:0] \gen_deskew_col[1].gen_col_delay.delay_pipe[1] ;
   wire [31:0] \gen_deskew_col[1].gen_col_delay.delay_pipe[2] ;
   wire [31:0] \gen_deskew_col[1].gen_col_delay.delay_pipe[3] ;
   wire [31:0] \gen_deskew_col[1].gen_col_delay.delay_pipe[4] ;
   wire [31:0] \gen_deskew_col[1].gen_col_delay.delay_pipe[5] ;
-  wire signed [31:0] \gen_deskew_col[1].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[1].gen_col_delay.j ;
   wire [31:0] \gen_deskew_col[2].gen_col_delay.delay_pipe[0] ;
   wire [31:0] \gen_deskew_col[2].gen_col_delay.delay_pipe[1] ;
   wire [31:0] \gen_deskew_col[2].gen_col_delay.delay_pipe[2] ;
   wire [31:0] \gen_deskew_col[2].gen_col_delay.delay_pipe[3] ;
   wire [31:0] \gen_deskew_col[2].gen_col_delay.delay_pipe[4] ;
-  wire signed [31:0] \gen_deskew_col[2].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[2].gen_col_delay.j ;
   wire [31:0] \gen_deskew_col[3].gen_col_delay.delay_pipe[0] ;
   wire [31:0] \gen_deskew_col[3].gen_col_delay.delay_pipe[1] ;
   wire [31:0] \gen_deskew_col[3].gen_col_delay.delay_pipe[2] ;
   wire [31:0] \gen_deskew_col[3].gen_col_delay.delay_pipe[3] ;
-  wire signed [31:0] \gen_deskew_col[3].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[3].gen_col_delay.j ;
   wire [31:0] \gen_deskew_col[4].gen_col_delay.delay_pipe[0] ;
   wire [31:0] \gen_deskew_col[4].gen_col_delay.delay_pipe[1] ;
   wire [31:0] \gen_deskew_col[4].gen_col_delay.delay_pipe[2] ;
-  wire signed [31:0] \gen_deskew_col[4].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[4].gen_col_delay.j ;
   wire [31:0] \gen_deskew_col[5].gen_col_delay.delay_pipe[0] ;
   wire [31:0] \gen_deskew_col[5].gen_col_delay.delay_pipe[1] ;
-  wire signed [31:0] \gen_deskew_col[5].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[5].gen_col_delay.j ;
   wire [31:0] \gen_deskew_col[6].gen_col_delay.delay_pipe[0] ;
-  wire signed [31:0] \gen_deskew_col[6].gen_col_delay.j ;
+  wire [31:0] \gen_deskew_col[6].gen_col_delay.j ;
   MUX2_X1 _1792_ (
     .A(\gen_deskew_col[1].gen_col_delay.delay_pipe[4] [31]),
     .B(\gen_deskew_col[1].gen_col_delay.delay_pipe[3] [31]),
@@ -842843,32 +842843,32 @@ module \$paramod\skew_unit\ARRAY_SIZE=s32'00000000000000000000000000001000 (clk,
   wire _446_;
   wire _447_;
   wire [7:0] \gen_skew_row[1].gen_row_delay.delay_pipe[0] ;
-  wire signed [31:0] \gen_skew_row[1].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[1].gen_row_delay.j ;
   wire [7:0] \gen_skew_row[2].gen_row_delay.delay_pipe[0] ;
   wire [7:0] \gen_skew_row[2].gen_row_delay.delay_pipe[1] ;
-  wire signed [31:0] \gen_skew_row[2].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[2].gen_row_delay.j ;
   wire [7:0] \gen_skew_row[3].gen_row_delay.delay_pipe[0] ;
   wire [7:0] \gen_skew_row[3].gen_row_delay.delay_pipe[1] ;
   wire [7:0] \gen_skew_row[3].gen_row_delay.delay_pipe[2] ;
-  wire signed [31:0] \gen_skew_row[3].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[3].gen_row_delay.j ;
   wire [7:0] \gen_skew_row[4].gen_row_delay.delay_pipe[0] ;
   wire [7:0] \gen_skew_row[4].gen_row_delay.delay_pipe[1] ;
   wire [7:0] \gen_skew_row[4].gen_row_delay.delay_pipe[2] ;
   wire [7:0] \gen_skew_row[4].gen_row_delay.delay_pipe[3] ;
-  wire signed [31:0] \gen_skew_row[4].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[4].gen_row_delay.j ;
   wire [7:0] \gen_skew_row[5].gen_row_delay.delay_pipe[0] ;
   wire [7:0] \gen_skew_row[5].gen_row_delay.delay_pipe[1] ;
   wire [7:0] \gen_skew_row[5].gen_row_delay.delay_pipe[2] ;
   wire [7:0] \gen_skew_row[5].gen_row_delay.delay_pipe[3] ;
   wire [7:0] \gen_skew_row[5].gen_row_delay.delay_pipe[4] ;
-  wire signed [31:0] \gen_skew_row[5].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[5].gen_row_delay.j ;
   wire [7:0] \gen_skew_row[6].gen_row_delay.delay_pipe[0] ;
   wire [7:0] \gen_skew_row[6].gen_row_delay.delay_pipe[1] ;
   wire [7:0] \gen_skew_row[6].gen_row_delay.delay_pipe[2] ;
   wire [7:0] \gen_skew_row[6].gen_row_delay.delay_pipe[3] ;
   wire [7:0] \gen_skew_row[6].gen_row_delay.delay_pipe[4] ;
   wire [7:0] \gen_skew_row[6].gen_row_delay.delay_pipe[5] ;
-  wire signed [31:0] \gen_skew_row[6].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[6].gen_row_delay.j ;
   wire [7:0] \gen_skew_row[7].gen_row_delay.delay_pipe[0] ;
   wire [7:0] \gen_skew_row[7].gen_row_delay.delay_pipe[1] ;
   wire [7:0] \gen_skew_row[7].gen_row_delay.delay_pipe[2] ;
@@ -842876,7 +842876,7 @@ module \$paramod\skew_unit\ARRAY_SIZE=s32'00000000000000000000000000001000 (clk,
   wire [7:0] \gen_skew_row[7].gen_row_delay.delay_pipe[4] ;
   wire [7:0] \gen_skew_row[7].gen_row_delay.delay_pipe[5] ;
   wire [7:0] \gen_skew_row[7].gen_row_delay.delay_pipe[6] ;
-  wire signed [31:0] \gen_skew_row[7].gen_row_delay.j ;
+  wire [31:0] \gen_skew_row[7].gen_row_delay.j ;
   MUX2_X1 _448_ (
     .A(\gen_skew_row[4].gen_row_delay.delay_pipe[3] [7]),
     .B(\gen_skew_row[4].gen_row_delay.delay_pipe[2] [7]),
@@ -858003,23 +858003,23 @@ module \$paramod\vector_unit\ARRAY_SIZE=s32'00000000000000000000000000001000 (cl
   wire _07089_;
   wire _07090_;
   wire _07091_;
-  wire signed [31:0] c;
-  wire signed [31:0] \ch_bias[0] ;
-  wire signed [31:0] \ch_bias[1] ;
-  wire signed [31:0] \ch_bias[2] ;
-  wire signed [31:0] \ch_bias[3] ;
-  wire signed [31:0] \ch_bias[4] ;
-  wire signed [31:0] \ch_bias[5] ;
-  wire signed [31:0] \ch_bias[6] ;
-  wire signed [31:0] \ch_bias[7] ;
-  wire signed [31:0] \ch_in[0] ;
-  wire signed [31:0] \ch_in[1] ;
-  wire signed [31:0] \ch_in[2] ;
-  wire signed [31:0] \ch_in[3] ;
-  wire signed [31:0] \ch_in[4] ;
-  wire signed [31:0] \ch_in[5] ;
-  wire signed [31:0] \ch_in[6] ;
-  wire signed [31:0] \ch_in[7] ;
+  wire [31:0] c;
+  wire [31:0] \ch_bias[0] ;
+  wire [31:0] \ch_bias[1] ;
+  wire [31:0] \ch_bias[2] ;
+  wire [31:0] \ch_bias[3] ;
+  wire [31:0] \ch_bias[4] ;
+  wire [31:0] \ch_bias[5] ;
+  wire [31:0] \ch_bias[6] ;
+  wire [31:0] \ch_bias[7] ;
+  wire [31:0] \ch_in[0] ;
+  wire [31:0] \ch_in[1] ;
+  wire [31:0] \ch_in[2] ;
+  wire [31:0] \ch_in[3] ;
+  wire [31:0] \ch_in[4] ;
+  wire [31:0] \ch_in[5] ;
+  wire [31:0] \ch_in[6] ;
+  wire [31:0] \ch_in[7] ;
   INV_X1 _07092_ (
     .A(enable),
     .ZN(_00320_)
@@ -899228,10 +899228,10 @@ module pe(clk, rst_n, weight_en, compute_en, clear_acc, weight_in, act_in, sum_i
   wire _0727_;
   wire _0728_;
   wire _0729_;
-  wire signed [7:0] s_act;
-  wire signed [31:0] s_sum_in;
-  wire signed [7:0] s_weight;
-  wire signed [7:0] weight_reg;
+  wire [7:0] s_act;
+  wire [31:0] s_sum_in;
+  wire [7:0] s_weight;
+  wire [7:0] weight_reg;
   INV_X1 _0730_ (
     .A(clear_acc),
     .ZN(_0048_)

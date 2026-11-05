@@ -2,3 +2,5 @@
 *.vcd
 __pycache__/
 *.pyc
+*.odb
+pnr/*.odb
