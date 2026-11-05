@@ -1,0 +1,75 @@
+[*]
+[*] GTKWave Analyzer Save File
+[*]
+[dumpfile] "sim/apex_tpu.vcd"
+[savefile] "sim/apex_tpu.gtkw"
+[timestart] 0
+[size] 1920 1080
+[pos] -1 -1
+*-*begin-signals*-*
+tb_apex_tpu.clk
+tb_apex_tpu.rst_n
+@200
+-INSTRUCTION ENGINE
+@22
+tb_apex_tpu.instruction[31:0]
+tb_apex_tpu.dut.u_controller.state[3:0]
+@28
+tb_apex_tpu.instr_valid
+tb_apex_tpu.instr_ready
+tb_apex_tpu.tpu_busy
+tb_apex_tpu.tpu_done
+@200
+-AXI4 MASTER INTERFACE
+@22
+tb_apex_tpu.axi_araddr[31:0]
+tb_apex_tpu.axi_arlen[7:0]
+@28
+tb_apex_tpu.axi_arvalid
+tb_apex_tpu.axi_arready
+@22
+tb_apex_tpu.axi_rdata[63:0]
+@28
+tb_apex_tpu.axi_rvalid
+tb_apex_tpu.axi_rlast
+tb_apex_tpu.axi_rready
+@22
+tb_apex_tpu.axi_awaddr[31:0]
+tb_apex_tpu.axi_awlen[7:0]
+@28
+tb_apex_tpu.axi_awvalid
+tb_apex_tpu.axi_awready
+@22
+tb_apex_tpu.axi_wdata[63:0]
+@28
+tb_apex_tpu.axi_wvalid
+tb_apex_tpu.axi_wlast
+tb_apex_tpu.axi_wready
+tb_apex_tpu.axi_bvalid
+tb_apex_tpu.axi_bready
+@200
+-UNIFIED BUFFER PORT B
+@28
+tb_apex_tpu.dut.ctrl_ub_b_en
+tb_apex_tpu.dut.ctrl_ub_b_we
+@22
+tb_apex_tpu.dut.ctrl_ub_b_addr[7:0]
+tb_apex_tpu.dut.ub_b_rdata[63:0]
+tb_apex_tpu.dut.vpu_ub_wdata[63:0]
+@200
+-2D SYSTOLIC ARRAY GRID
+@28
+tb_apex_tpu.dut.ctrl_sa_compute_en
+tb_apex_tpu.dut.ctrl_sa_weight_load_en
+@22
+tb_apex_tpu.dut.skew_sa_act_flat[63:0]
+tb_apex_tpu.dut.sa_deskew_sum_flat[255:0]
+@200
+-OUTPUT DESKEW & VPU
+@22
+tb_apex_tpu.dut.deskew_vpu_sum_flat[255:0]
+tb_apex_tpu.dut.ext_bias_flat[255:0]
+tb_apex_tpu.dut.vpu_ub_wdata[63:0]
+@28
+tb_apex_tpu.dut.vpu_ctrl_valid_out
+*-*end-signals*-*
