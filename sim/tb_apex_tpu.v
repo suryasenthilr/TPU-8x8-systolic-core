@@ -1,12 +1,15 @@
 // =============================================================================
 // File: tb_apex_tpu.v
 // Module: tb_apex_tpu
-// Description: Cycle-accurate, self-checking hardware testbench for Apex-TPU.
+// Description: Multi-Mode, Cycle-Accurate Hardware Verification Suite for Apex-TPU.
+//              Verifies:
+//              - Test Suite 1: Transformer GELU Mode (PWL GELU + Bias + Quant Shift=3)
+//              - Test Suite 2: Deep Learning ReLU Mode (Strict max(0,x) + Bias + Quant Shift=2)
+//              - Test Suite 3: Linear Pass-Through Mode (Linear GEMM + Bias + Quant Shift=4)
 //              Features:
-//              - Synthetic AXI4 Slave DRAM Memory Responder
-//              - CISC TPU Instruction Dispatcher
-//              - End-to-End Verification of INT8 Systolic GEMM + Bias + PWL GELU
-//              - Bit-exact comparison against Golden NumPy Model
+//              - Synthetic AXI4 Slave DRAM Memory Responder (4KB)
+//              - CISC Instruction Dispatcher
+//              - Comprehensive bit-exact comparison against NumPy golden references
 // =============================================================================
 
 `timescale 1ns / 1ps
@@ -118,7 +121,9 @@ module tb_apex_tpu;
     // Synthetic AXI4 Slave DRAM Memory Responder
     // -------------------------------------------------------------------------
     reg [63:0] dram_mem [0:511]; // 512 entries x 8 bytes = 4KB
-    reg [63:0] expected_out [0:7];
+    reg [63:0] expected_gelu [0:7];
+    reg [63:0] expected_relu [0:7];
+    reg [63:0] expected_pass [0:7];
     reg [31:0] bias_mem [0:7];
 
     reg [8:0]  rd_word_addr;
@@ -137,8 +142,8 @@ module tb_apex_tpu;
 
     // Simulation watchdog
     initial begin
-        #100000;
-        $display("[ERROR] Simulation Watchdog Timeout (100us)!");
+        #250000;
+        $display("[ERROR] Simulation Watchdog Timeout (250us)!");
         $finish;
     end
 
@@ -154,20 +159,18 @@ module tb_apex_tpu;
             rd_len_cnt  <= 8'd0;
             rd_word_addr<= 9'd0;
         end else begin
-            // Ready to accept new AR if not actively bursting
             if (!rd_active) begin
                 axi_arready <= 1'b1;
                 if (axi_arvalid && axi_arready) begin
                     axi_arready  <= 1'b0;
                     rd_active    <= 1'b1;
-                    rd_word_addr <= axi_araddr[11:3]; // Word address (64-bit word)
+                    rd_word_addr <= axi_araddr[11:3];
                     rd_len_cnt   <= axi_arlen;
                     axi_rvalid   <= 1'b1;
                     axi_rdata    <= dram_mem[axi_araddr[11:3]];
                     axi_rlast    <= (axi_arlen == 8'd0);
                 end
             end else begin
-                // Bursting read beats
                 if (axi_rvalid && axi_rready) begin
                     if (rd_len_cnt == 8'd0) begin
                         axi_rvalid <= 1'b0;
@@ -195,7 +198,6 @@ module tb_apex_tpu;
             wr_word_addr<= 9'd0;
             wr_len_cnt  <= 8'd0;
         end else begin
-            // Defaults
             if (axi_bvalid && axi_bready) begin
                 axi_bvalid <= 1'b0;
             end
@@ -227,7 +229,7 @@ module tb_apex_tpu;
     end
 
     // -------------------------------------------------------------------------
-    // Helper Task: Send Instruction
+    // Helper Tasks
     // -------------------------------------------------------------------------
     task send_instr(input [31:0] cmd);
         begin
@@ -241,7 +243,6 @@ module tb_apex_tpu;
         end
     endtask
 
-    // Helper Task: Wait for TPU idle
     task wait_tpu_idle();
         begin
             @(posedge clk);
@@ -252,7 +253,7 @@ module tb_apex_tpu;
     // -------------------------------------------------------------------------
     // Test Sequence
     // -------------------------------------------------------------------------
-    integer r, c, err_cnt, cycle_start, cycle_end, total_cycles;
+    integer r, c, total_errs, mode_errs;
     reg signed [7:0] act_byte, exp_byte;
 
     initial begin
@@ -262,7 +263,9 @@ module tb_apex_tpu;
 
         // Load test vectors
         $readmemh("sim/dram_init.hex", dram_mem);
-        $readmemh("sim/expected_gelu.hex", expected_out);
+        $readmemh("sim/expected_gelu.hex", expected_gelu);
+        $readmemh("sim/expected_relu.hex", expected_relu);
+        $readmemh("sim/expected_pass.hex", expected_pass);
         $readmemh("sim/bias.hex", bias_mem);
 
         // Pack bias memory into flat bias vector
@@ -274,102 +277,151 @@ module tb_apex_tpu;
         rst_n       = 0;
         instruction = 32'd0;
         instr_valid = 0;
-        err_cnt     = 0;
+        total_errs  = 0;
 
         repeat (5) @(posedge clk);
         rst_n = 1;
         repeat (5) @(posedge clk);
 
         $display("==================================================================");
-        $display("   APEX-TPU: 8x8 SYSTOLIC ARRAY DL ACCELERATOR VERIFICATION");
+        $display("   APEX-TPU: COMPREHENSIVE MULTI-MODE VERIFICATION SUITE");
+        $display("   Core: 8x8 Systolic Grid (64 PEs, 64 MACs/cycle, Weight-Stationary)");
         $display("==================================================================");
 
-        cycle_start = $time / CLK_PERIOD;
-
-        // 1. OP_LOAD_WEIGHT: DRAM Row 0 -> Weight Buffer Row 0, length 8
-        // Opcode=0x1, ext_row=0x00, int_row=0x00, len=0x08 => 32'h10000008
-        $display("[%0t ns] [DISPATCH] OP_LOAD_WEIGHT: Preloading 8x8 Weight Matrix from DRAM to WB...", $time);
-        send_instr(32'h10000008);
+        // Preload Weights into Weight Buffer & Systolic Array PEs
+        $display("[%0t ns] [STEP 1] Preloading 8x8 Stationary Weights from DRAM...", $time);
+        send_instr(32'h10000008); // OP_LOAD_WEIGHT: DRAM Row 0 -> WB Row 0, len 8
         wait_tpu_idle();
-        $display("[%0t ns] [STATUS] Weight DMA transfer complete.", $time);
-
-        // 2. OP_SET_WEIGHT: Tile 0 -> Systolic Array PEs
-        // Opcode=0x3, tile_idx=0 => 32'h30000000
-        $display("[%0t ns] [DISPATCH] OP_SET_WEIGHT: Preloading Stationary Weights into 64 PEs...", $time);
-        send_instr(32'h30000000);
+        send_instr(32'h30000000); // OP_SET_WEIGHT: Tile 0 -> PEs
         wait_tpu_idle();
-        $display("[%0t ns] [STATUS] Weights stationary in PE registers.", $time);
 
-        // 3. OP_LOAD_INPUT: DRAM Row 16 -> Unified Buffer Row 0, length 8
-        // Opcode=0x2, ext_row=0x10, int_row=0x00, len=0x08 => 32'h20100008
-        $display("[%0t ns] [DISPATCH] OP_LOAD_INPUT: Streaming 8x8 Activation Matrix from DRAM to UB...", $time);
-        send_instr(32'h20100008);
+        // Load Input Activations into Unified Buffer
+        $display("[%0t ns] [STEP 2] Preloading 8x8 Activation Matrix into Unified Buffer...", $time);
+        send_instr(32'h20100008); // OP_LOAD_INPUT: DRAM Row 16 -> UB Row 0, len 8
         wait_tpu_idle();
-        $display("[%0t ns] [STATUS] Activations loaded into Unified Buffer.", $time);
 
-        // 4. OP_CONFIG_VPU: Act=GELU (2'b10), Bias=1, Quant_Shift=3 (4'd3)
-        // Opcode=0x5, act[25:24]=2'b10, bias[20]=1'b1, shift[19:16]=4'h3
-        // 32'b0101_0010_0001_0011_0000_0000_0000_0000 => 32'h52130000
-        $display("[%0t ns] [DISPATCH] OP_CONFIG_VPU: Config VPU (GELU, Bias=ON, Shift=3)...", $time);
+        // =====================================================================
+        // TEST SUITE 1: TRANSFORMER GELU MODE
+        // =====================================================================
+        $display("\n------------------------------------------------------------------");
+        $display("TEST SUITE 1: TRANSFORMER GELU (Piecewise Linear GELU, Bias=ON, Shift=3)");
+        $display("------------------------------------------------------------------");
+        // OP_CONFIG_VPU: GELU (2'b10), Bias=1, Shift=3 => 32'h52130000
         send_instr(32'h52130000);
         wait_tpu_idle();
-
-        // 5. OP_MATMUL: UB rd_base=0x00, UB wr_base=0x40 (row 64), K=8
-        // Opcode=0x4, rd_base=0x00, wr_base=0x40, K=0x08 => 32'h40004008
-        $display("[%0t ns] [DISPATCH] OP_MATMUL: Executing 2D Systolic Wavefront Matrix Multiplication...", $time);
+        // OP_MATMUL: UB rd=0, UB wr=64, K=8 => 32'h40004008
         send_instr(32'h40004008);
         wait_tpu_idle();
-        $display("[%0t ns] [STATUS] GEMM systolic wavefront completed and written back to UB.", $time);
-
-        // 6. OP_STORE_OUT: UB Row 64 -> DRAM Row 32 (0x20), length 8
-        // Opcode=0x6, ext_row=0x20, int_row=0x40, len=0x08 => 32'h60204008
-        $display("[%0t ns] [DISPATCH] OP_STORE_OUT: DMA Transfer of Quantized Results to DRAM...", $time);
+        // OP_STORE_OUT: UB row 64 -> DRAM row 32, len 8 => 32'h60204008
         send_instr(32'h60204008);
         wait_tpu_idle();
-        $display("[%0t ns] [STATUS] Results stored in system DRAM.", $time);
 
-        // 7. OP_HALT
-        // Opcode=0xF => 32'hF0000000
-        send_instr(32'hF0000000);
-        @(posedge clk);
-        while (!tpu_done) @(posedge clk);
-
-        cycle_end = $time / CLK_PERIOD;
-        total_cycles = cycle_end - cycle_start;
-
-        $display("------------------------------------------------------------------");
-        $display("[BENCHMARK] Total Execution Latency: %0d clock cycles (%0.2f ns @ 100MHz)", total_cycles, total_cycles * CLK_PERIOD);
-        $display("[BENCHMARK] Peak Compute Throughput: 64 MACs/cycle (12.8 GOPs/s @ 100MHz)");
-
-        // ---------------------------------------------------------------------
-        // Check results against Golden Model
-        // ---------------------------------------------------------------------
-        $display("------------------------------------------------------------------");
-        $display("VERIFYING RESULTS AGAINST GOLDEN PYTHON NUMPY MODEL...");
-
+        mode_errs = 0;
         for (r = 0; r < ARRAY_SIZE; r = r + 1) begin
             $write("Row %0d: Expected [ ", r);
             for (c = 0; c < ARRAY_SIZE; c = c + 1) begin
-                exp_byte = expected_out[r][c*8 +: 8];
+                exp_byte = expected_gelu[r][c*8 +: 8];
                 $write("%4d ", exp_byte);
             end
             $write("] | Hardware [ ");
             for (c = 0; c < ARRAY_SIZE; c = c + 1) begin
                 act_byte = dram_mem[32 + r][c*8 +: 8];
-                exp_byte = expected_out[r][c*8 +: 8];
+                exp_byte = expected_gelu[r][c*8 +: 8];
                 $write("%4d ", act_byte);
-                if (act_byte !== exp_byte) begin
-                    err_cnt = err_cnt + 1;
-                end
+                if (act_byte !== exp_byte) mode_errs = mode_errs + 1;
             end
             $display("]");
         end
+        if (mode_errs == 0) $display(">>> [PASS] TRANSFORMER GELU: 64/64 ELEMENTS MATCHED (100%% BIT-EXACT) <<<");
+        else $display(">>> [FAIL] TRANSFORMER GELU: %0d MISMATCHES! <<<", mode_errs);
+        total_errs = total_errs + mode_errs;
 
-        $display("==================================================================");
-        if (err_cnt == 0) begin
-            $display(">>> TEST PASSED: ALL 64 MATRIX ELEMENTS MATCHED WITH 100%% BIT-EXACT ACCURACY! <<<");
+        // =====================================================================
+        // TEST SUITE 2: DEEP LEARNING RELU MODE
+        // =====================================================================
+        $display("\n------------------------------------------------------------------");
+        $display("TEST SUITE 2: DEEP LEARNING RELU (Strict max(0,x), Bias=ON, Shift=2)");
+        $display("------------------------------------------------------------------");
+        // OP_CONFIG_VPU: ReLU (2'b01), Bias=1, Shift=2 => 32'h51120000
+        send_instr(32'h51120000);
+        wait_tpu_idle();
+        // OP_MATMUL: UB rd=0, UB wr=72, K=8 => 32'h40004808
+        send_instr(32'h40004808);
+        wait_tpu_idle();
+        // OP_STORE_OUT: UB row 72 -> DRAM row 40, len 8 => 32'h60284808
+        send_instr(32'h60284808);
+        wait_tpu_idle();
+
+        mode_errs = 0;
+        for (r = 0; r < ARRAY_SIZE; r = r + 1) begin
+            $write("Row %0d: Expected [ ", r);
+            for (c = 0; c < ARRAY_SIZE; c = c + 1) begin
+                exp_byte = expected_relu[r][c*8 +: 8];
+                $write("%4d ", exp_byte);
+            end
+            $write("] | Hardware [ ");
+            for (c = 0; c < ARRAY_SIZE; c = c + 1) begin
+                act_byte = dram_mem[40 + r][c*8 +: 8];
+                exp_byte = expected_relu[r][c*8 +: 8];
+                $write("%4d ", act_byte);
+                if (act_byte !== exp_byte) mode_errs = mode_errs + 1;
+            end
+            $display("]");
+        end
+        if (mode_errs == 0) $display(">>> [PASS] STANDARD RELU: 64/64 ELEMENTS MATCHED (100%% BIT-EXACT) <<<");
+        else $display(">>> [FAIL] STANDARD RELU: %0d MISMATCHES! <<<", mode_errs);
+        total_errs = total_errs + mode_errs;
+
+        // =====================================================================
+        // TEST SUITE 3: LINEAR PASS-THROUGH MODE
+        // =====================================================================
+        $display("\n------------------------------------------------------------------");
+        $display("TEST SUITE 3: LINEAR PASS-THROUGH (Bypass, Bias=ON, Shift=4)");
+        $display("------------------------------------------------------------------");
+        // OP_CONFIG_VPU: Pass (2'b00), Bias=1, Shift=4 => 32'h50140000
+        send_instr(32'h50140000);
+        wait_tpu_idle();
+        // OP_MATMUL: UB rd=0, UB wr=80, K=8 => 32'h40005008
+        send_instr(32'h40005008);
+        wait_tpu_idle();
+        // OP_STORE_OUT: UB row 80 -> DRAM row 48, len 8 => 32'h60305008
+        send_instr(32'h60305008);
+        wait_tpu_idle();
+
+        mode_errs = 0;
+        for (r = 0; r < ARRAY_SIZE; r = r + 1) begin
+            $write("Row %0d: Expected [ ", r);
+            for (c = 0; c < ARRAY_SIZE; c = c + 1) begin
+                exp_byte = expected_pass[r][c*8 +: 8];
+                $write("%4d ", exp_byte);
+            end
+            $write("] | Hardware [ ");
+            for (c = 0; c < ARRAY_SIZE; c = c + 1) begin
+                act_byte = dram_mem[48 + r][c*8 +: 8];
+                exp_byte = expected_pass[r][c*8 +: 8];
+                $write("%4d ", act_byte);
+                if (act_byte !== exp_byte) mode_errs = mode_errs + 1;
+            end
+            $display("]");
+        end
+        if (mode_errs == 0) $display(">>> [PASS] LINEAR PASS-THROUGH: 64/64 ELEMENTS MATCHED (100%% BIT-EXACT) <<<");
+        else $display(">>> [FAIL] LINEAR PASS-THROUGH: %0d MISMATCHES! <<<", mode_errs);
+        total_errs = total_errs + mode_errs;
+
+        // =====================================================================
+        // SUMMARY
+        // =====================================================================
+        // OP_HALT
+        send_instr(32'hF0000000);
+        @(posedge clk);
+        while (!tpu_done) @(posedge clk);
+
+        $display("\n==================================================================");
+        if (total_errs == 0) begin
+            $display(">>> ALL 3 TEST SUITES PASSED: 192/192 MATRIX ELEMENTS VERIFIED! <<<");
+            $display(">>> ZERO DEFECTS DETECTED ACROSS ALL DL ACTIVATION PIPELINES! <<<");
         end else begin
-            $display(">>> TEST FAILED: %0d MISMATCHES DETECTED! <<<", err_cnt);
+            $display(">>> TOTAL DEFECTS DETECTED: %0d <<<", total_errs);
         end
         $display("==================================================================");
 
