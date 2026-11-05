@@ -159,36 +159,7 @@ Synthesis was performed with Yosys and ABC against the standard Nangate 45nm ope
 | `tpu_controller` | CISC Instruction Decoder & FSM | 541 | 1,200.0 | 1.5 kGE | 0.4% |
 | **apex_tpu_top** | **Full Core Accelerator** | **173,758** | **293,491.37** | **367.8 kGE** | **100.0%** |
 
----
 
-## Physical Design & GDSII Silicon Signoff
-
-Apex-TPU features a complete, tapeout-ready physical design place-and-route (P&R) implementation executed via **OpenROAD** and **KLayout** on the **Nangate 45nm Open Cell Library (FreePDK45)**.
-
-| Physical Parameter | Systolic Array Core | Full Apex-TPU Top Core |
-| :--- | :--- | :--- |
-| **Die Dimensions** | $355.05 \times 355.05\,\mu m$ | $723.35 \times 723.35\,\mu m$ |
-| **Total Die Footprint** | $0.126\text{ mm}^2$ | $0.523\text{ mm}^2$ |
-| **Core Area** | $118,766.34\,\mu m^2$ | $504,788.47\,\mu m^2$ |
-| **Placed & Legalized Cells** | 46,271 instances (100%) | 179,209 instances (100%) |
-| **Core Utilization** | 55.0% | 60.0% |
-| **Clock Tree Synthesis (CTS)** | Balanced H-Tree, 503 buffers | 8-Level Balanced Tree, 3,575 buffers |
-| **Clock Sinks** | 8,192 flip-flops | 27,891 flip-flops |
-| **Total Power Consumption** | 142.6 mW @ 100MHz | 578.0 mW @ 100MHz |
-| **Sequential / Dynamic Power** | 34.2 mW (24.0%) | 111.0 mW (19.2%) |
-| **Combinational Power** | 98.4 mW (69.0%) | 438.0 mW (75.8%) |
-| **Clock Distribution Power** | 8.5 mW (6.0%) | 28.8 mW (5.0%) |
-| **Leakage Power** | 1.5 mW (1.0%) | 6.57 mW (1.1%) |
-| **Power Distribution Network** | M1 Rails, M4 Vert (56µm), M7 Horiz (30µm) | M1 Rails, M4 Vert (56µm), M7 Horiz (30µm) |
-| **GDSII Tapeout Stream** | `systolic_array.gds` (5.12 MB) | `apex_tpu_top.gds` (16.55 MB) |
-
-### Silicon Layout Snapshots (Rendered via KLayout)
-
-<p align="center">
-  <img src="docs/apex_tpu_top_layout.png" alt="Apex-TPU Top Layout" width="48%">
-  <img src="docs/systolic_array_layout.png" alt="Systolic Array Core Layout" width="48%">
-</p>
-<p align="center"><em>Left: Full Apex-TPU Accelerator Die (179k cells, 723×723 µm). Right: 8×8 Systolic Array Core (46k cells, 355×355 µm).</em></p>
 
 ---
 
