@@ -330,7 +330,7 @@ class ApexTpuWorkbench(tk.Tk):
 
         tk.Label(b_frame, text="NANGATE 45nm OPEN CELL ASIC SYNTHESIS METRICS", font=(FONT_FAMILY, 14, "bold"), fg=COLOR_CYAN, bg=BG_CARD).pack(anchor="w")
         tk.Label(b_frame, text="Standard Cell Library: NangateOpenCellLibrary_typical.lib (45nm Standard VT)\nSynthesis Engine: Yosys Open SYnthesis Suite + ABC Logic Optimizer",
-                 font=(FONT_FAMILY, 9.5), fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(4, 0))
+                 font=(FONT_FAMILY, 10), fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w", pady=(4, 0))
 
         # Metrics Summary Grid
         m_grid = tk.Frame(sf, bg=BG_DARK)
@@ -348,7 +348,7 @@ class ApexTpuWorkbench(tk.Tk):
             c.grid(row=0, column=i, padx=8, sticky="nsew")
             tk.Label(c, text=title, font=(FONT_FAMILY, 10, "bold"), fg=TEXT_MUTED, bg=BG_CARD).pack(anchor="w")
             tk.Label(c, text=val, font=(FONT_FAMILY, 16, "bold"), fg=col, bg=BG_CARD).pack(anchor="w", pady=2)
-            tk.Label(c, text=sub, font=(FONT_FAMILY, 8.5), fg=TEXT_WHITE, bg=BG_CARD).pack(anchor="w")
+            tk.Label(c, text=sub, font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD).pack(anchor="w")
             m_grid.columnconfigure(i, weight=1)
 
         # Hierarchy Breakdown Table
@@ -357,7 +357,7 @@ class ApexTpuWorkbench(tk.Tk):
 
         headers = ["Submodule", "Function / Role", "Cell Count", "Area (µm²)", "Gate Eq (kGE)", "Area %"]
         for col_idx, h in enumerate(headers):
-            tk.Label(tbl_frame, text=h, font=(FONT_FAMILY, 9.5, "bold"), fg=COLOR_CYAN, bg=BG_CARD).grid(row=0, column=col_idx, sticky="w", padx=10, pady=4)
+            tk.Label(tbl_frame, text=h, font=(FONT_FAMILY, 10, "bold"), fg=COLOR_CYAN, bg=BG_CARD).grid(row=0, column=col_idx, sticky="w", padx=10, pady=4)
 
         rows = [
             ("unified_buffer", "2KB True Dual-Port Synchronous Scratchpad", "101,442", "170,000 µm²", "213.0 kGE", "57.9%"),
