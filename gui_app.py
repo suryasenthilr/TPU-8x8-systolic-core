@@ -36,7 +36,7 @@ class ApexTpuWorkbench(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Apex-TPU: 2D Systolic Array DL Accelerator — EDA Workbench")
-        self.geometry("1280x820")
+        self.geometry("1360x860")
         self.configure(bg=BG_DARK)
 
         # Style configuration
@@ -87,53 +87,52 @@ class ApexTpuWorkbench(tk.Tk):
         self._init_asic_tab(tab_asic)
 
     # -------------------------------------------------------------------------
-    # TAB 1: ARCHITECTURE
+    # TAB 1: ARCHITECTURE (Side-by-Side Split View for Large Readable Visuals)
     # -------------------------------------------------------------------------
     def _init_arch_tab(self, parent):
-        canvas = tk.Canvas(parent, bg=BG_DARK, highlightthickness=0)
-        scroll_y = tk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scroll_frame = tk.Frame(canvas, bg=BG_DARK)
+        # Outer split container
+        split_frame = tk.Frame(parent, bg=BG_DARK, padx=12, pady=10)
+        split_frame.pack(fill="both", expand=True)
 
-        scroll_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas_win = canvas.create_window((0, 0), window=scroll_frame, anchor="nw")
-        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_win, width=e.width))
-        canvas.configure(yscrollcommand=scroll_y.set)
+        # Left Column: Large, Crisp Architecture Diagram
+        left_box = tk.LabelFrame(split_frame, text=" 2D Systolic Array Microarchitecture Overview ",
+                                 bg=BG_CARD, fg=COLOR_CYAN, font=(FONT_FAMILY, 10, "bold"), padx=10, pady=10)
+        left_box.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
-        canvas.pack(side="left", fill="both", expand=True, padx=6, pady=6)
-        scroll_y.pack(side="right", fill="y")
-
-        # Mouse wheel scrolling
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        canvas.bind("<Enter>", lambda _: canvas.bind_all("<MouseWheel>", _on_mousewheel))
-        canvas.bind("<Leave>", lambda _: canvas.unbind_all("<MouseWheel>"))
-
-        # Load Architecture Diagram (Balanced height to fit within screen)
         diag_path = os.path.join(PROJECT_ROOT, "docs", "images", "apex_tpu_architecture.png")
         if os.path.exists(diag_path):
             img = Image.open(diag_path)
-            img.thumbnail((780, 390), Image.Resampling.LANCZOS)
+            # Large readable size that fills the left panel
+            img.thumbnail((960, 580), Image.Resampling.LANCZOS)
             self.tk_arch_img = ImageTk.PhotoImage(img)
-            img_lbl = tk.Label(scroll_frame, image=self.tk_arch_img, bg=BG_DARK)
-            img_lbl.pack(pady=(4, 6))
+            img_lbl = tk.Label(left_box, image=self.tk_arch_img, bg=BG_DARK)
+            img_lbl.pack(fill="both", expand=True)
 
-        # Specs cards arranged in 1 horizontal row (4 columns) to fit cleanly on screen
-        cards_frame = tk.Frame(scroll_frame, bg=BG_DARK)
-        cards_frame.pack(fill="x", pady=(0, 8), padx=12)
+        # Right Column: Architectural Highlights Cards (Vertically Stacked)
+        right_box = tk.Frame(split_frame, bg=BG_DARK, width=350)
+        right_box.pack(side="right", fill="y", padx=(0, 4))
+        right_box.pack_propagate(False)
 
         specs = [
-            ("Core Microarchitecture", "• 8x8 2D Systolic Grid (64 PEs)\n• Weight-Stationary (WS) dataflow\n• 64 signed INT8 MACs/cycle", COLOR_CYAN),
-            ("Memory Hierarchy", "• 2KB Dual-Port Synchronous UB\n• 512b Preload Stationary WB\n• AMBA AXI4 Master DMA Burst", COLOR_EMERALD),
-            ("Vector Unit (VPU)", "• 32-bit Column Bias Addition\n• PWL Transformer GELU / ReLU\n• INT32 -> INT8 Saturation", COLOR_ROSE),
-            ("ASIC Signoff (45nm)", "• 173,758 Standard Cells\n• 293,491 µm² (0.293 mm²)\n• 367.8 kGE Complexity", COLOR_AMBER)
+            ("Core Microarchitecture",
+             "• 8x8 2D Systolic Grid (64 PEs)\n• Weight-Stationary (WS) dataflow\n• 64 signed INT8 MACs/cycle\n• Diagonal wavefront skewing",
+             COLOR_CYAN),
+            ("Memory Hierarchy",
+             "• 2KB Dual-Port Synchronous UB\n• 512-bit Preload Stationary WB\n• AMBA AXI4 Master DMA Burst\n• INCR bursts up to 256 beats",
+             COLOR_EMERALD),
+            ("Vector Unit (VPU)",
+             "• 32-bit Column Bias Addition\n• PWL Transformer GELU / ReLU\n• INT32 -> INT8 Saturation\n• Direct loopback to UB Port B",
+             COLOR_ROSE),
+            ("Nangate 45nm ASIC Signoff",
+             "• 173,758 Standard Cells\n• 293,491 µm² (0.293 mm²) Area\n• 367.8 kGE Normalized Gates\n• 12.8 GOPs/s @ 100MHz",
+             COLOR_AMBER)
         ]
 
-        for i, (title, desc, col) in enumerate(specs):
-            card = tk.Frame(cards_frame, bg=BG_CARD, padx=12, pady=10, highlightbackground=col, highlightthickness=1)
-            card.grid(row=0, column=i, padx=5, sticky="nsew")
+        for title, desc, col in specs:
+            card = tk.Frame(right_box, bg=BG_CARD, padx=14, pady=12, highlightbackground=col, highlightthickness=1)
+            card.pack(fill="x", pady=6)
             tk.Label(card, text=title, font=(FONT_FAMILY, 10, "bold"), fg=col, bg=BG_CARD).pack(anchor="w")
-            tk.Label(card, text=desc, font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD, justify="left").pack(anchor="w", pady=(4, 0))
-            cards_frame.columnconfigure(i, weight=1)
+            tk.Label(card, text=desc, font=(FONT_FAMILY, 9), fg=TEXT_WHITE, bg=BG_CARD, justify="left").pack(anchor="w", pady=(6, 0))
 
     # -------------------------------------------------------------------------
     # TAB 2: INTERACTIVE MATRIX MULTIPLIER
