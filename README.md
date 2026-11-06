@@ -24,7 +24,7 @@ This TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware ac
 | **Core Utilization** | **60.0%** (Optimal Congestion & Routability) | **55.0%** | RePlAce Global Placer |
 | **Clock Tree Synthesis (CTS)**| **8-Level Balanced Tree** (3,575 buffers, 27,891 sinks) | **H-Tree** (503 buffers, 8,192 sinks) | TritonCTS (OpenSTA) |
 | **Total Power @ 100MHz** | **578.0 mW** (111 mW seq, 438 mW comb, 28.8 mW clock) | **142.6 mW** (34.2 mW seq, 98.4 mW comb, 8.5 mW clock) | OpenSTA Power Analyzer |
-| **Power Distribution Network** | M1 Rails, M4 Vert (56┬╡m), M7 Horiz (30┬╡m) | M1 Rails, M4 Vert (56┬╡m), M7 Horiz (30┬╡m) | PDN Generator |
+| **Power Distribution Network** | M1 Rails, M4 Vert (56 µm), M7 Horiz (30 µm) | M1 Rails, M4 Vert (56 µm), M7 Horiz (30 µm) | PDN Generator |
 | **GDSII Stream File** | [`apex_tpu_top.gds`](pnr/apex_tpu_top.gds) (**16.55 MB**) | [`systolic_array.gds`](pnr/systolic_array.gds) (**5.12 MB**) | KLayout Streamout |
 
 
@@ -50,39 +50,39 @@ This TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware ac
 
 ```
 TPU-8x8-systolic-core/
-Γö£ΓöÇΓöÇ rtl/                        # Synthesizable RTL Modules
-Γöé   Γö£ΓöÇΓöÇ pe.v                    # Processing Element (WS, 8-bit mult, 32-bit acc)
-Γöé   Γö£ΓöÇΓöÇ systolic_array.v        # 8x8 2D Systolic Processing Grid (64 PEs)
-Γöé   Γö£ΓöÇΓöÇ skew_unit.v             # Hardware Input Skewing Pipeline
-Γöé   Γö£ΓöÇΓöÇ deskew_unit.v           # Hardware Output Deskewing Pipeline
-Γöé   Γö£ΓöÇΓöÇ unified_buffer.v        # 2KB True Dual-Port Synchronous SRAM (UB)
-Γöé   Γö£ΓöÇΓöÇ weight_buffer.v         # Preload Stationary Weight Buffer (WB)
-Γöé   Γö£ΓöÇΓöÇ vector_unit.v           # VPU: Bias, ReLU, Transformer GELU, INT8 Quant
-Γöé   Γö£ΓöÇΓöÇ dma_axi_master.v        # 64-bit AMBA AXI4 Master DMA Burst Controller
-Γöé   Γö£ΓöÇΓöÇ tpu_controller.v        # CISC Instruction Decoder & Wavefront Sequencer
-Γöé   ΓööΓöÇΓöÇ apex_tpu_top.v          # Top-Level Integrated TPU Core
-Γö£ΓöÇΓöÇ sim/                        # Cycle-Accurate Verification Suite
-Γöé   Γö£ΓöÇΓöÇ tb_apex_tpu.v           # Self-checking testbench with AXI DRAM Responder
-Γöé   Γö£ΓöÇΓöÇ golden_tpu_model.py     # Bit-exact NumPy golden reference generator
-Γöé   Γö£ΓöÇΓöÇ dram_init.hex           # Simulated external DRAM memory image
-Γöé   Γö£ΓöÇΓöÇ expected_gelu.hex       # Golden model expected outputs
-Γöé   Γö£ΓöÇΓöÇ bias.hex                # 32-bit bias vector
-Γöé   Γö£ΓöÇΓöÇ apex_tpu.gtkw           # GTKWave signal configuration
-Γöé   ΓööΓöÇΓöÇ apex_tpu.vcd            # Generated waveform database
-Γö£ΓöÇΓöÇ synth/                      # ASIC Synthesis Flow
-Γöé   Γö£ΓöÇΓöÇ run_synth_tpu.ys        # Yosys synthesis script for Nangate 45nm
-Γöé   Γö£ΓöÇΓöÇ nangate45.lib           # Nangate 45nm Open Cell Library (Standard VT)
-Γöé   Γö£ΓöÇΓöÇ synth.log               # Full Yosys and ABC synthesis report
-Γöé   ΓööΓöÇΓöÇ apex_tpu_nangate45_netlist.v # Synthesized Gate-Level Netlist
-Γö£ΓöÇΓöÇ docs/                       # Architectural Documentation & Diagrams
-Γöé   Γö£ΓöÇΓöÇ ARCHITECTURE.md         # Detailed microarchitectural specification
-Γöé   ΓööΓöÇΓöÇ images/
-Γöé       Γö£ΓöÇΓöÇ apex_tpu_architecture.png # Microarchitecture block diagram
-Γöé       ΓööΓöÇΓöÇ gen_architecture_diagram.py # Diagram generator script
-Γö£ΓöÇΓöÇ gui_app.py                  # Desktop EDA Workbench GUI (Tkinter + PIL)
-Γö£ΓöÇΓöÇ Launch_EDA_Workbench.bat    # One-click desktop GUI launcher
-Γö£ΓöÇΓöÇ view_waves.bat              # One-click GTKWave launcher
-ΓööΓöÇΓöÇ README.md                   # Project documentation
+├── rtl/                        # Synthesizable RTL Modules
+│   ├── pe.v                    # Processing Element (WS, 8-bit mult, 32-bit acc)
+│   ├── systolic_array.v        # 8x8 2D Systolic Processing Grid (64 PEs)
+│   ├── skew_unit.v             # Hardware Input Skewing Pipeline
+│   ├── deskew_unit.v           # Hardware Output Deskewing Pipeline
+│   ├── unified_buffer.v        # 2KB True Dual-Port Synchronous SRAM (UB)
+│   ├── weight_buffer.v         # Preload Stationary Weight Buffer (WB)
+│   ├── vector_unit.v           # VPU: Bias, ReLU, Transformer GELU, INT8 Quant
+│   ├── dma_axi_master.v        # 64-bit AMBA AXI4 Master DMA Burst Controller
+│   ├── tpu_controller.v        # CISC Instruction Decoder & Wavefront Sequencer
+│   └── apex_tpu_top.v          # Top-Level Integrated TPU Core
+├── sim/                        # Cycle-Accurate Verification Suite
+│   ├── tb_apex_tpu.v           # Self-checking testbench with AXI DRAM Responder
+│   ├── golden_tpu_model.py     # Bit-exact NumPy golden reference generator
+│   ├── dram_init.hex           # Simulated external DRAM memory image
+│   ├── expected_gelu.hex       # Golden model expected outputs
+│   ├── bias.hex                # 32-bit bias vector
+│   ├── apex_tpu.gtkw           # GTKWave signal configuration
+│   └── apex_tpu.vcd            # Generated waveform database
+├── synth/                      # ASIC Synthesis Flow
+│   ├── run_synth_tpu.ys        # Yosys synthesis script for Nangate 45nm
+│   ├── nangate45.lib           # Nangate 45nm Open Cell Library (Standard VT)
+│   ├── synth.log               # Full Yosys and ABC synthesis report
+│   └── apex_tpu_nangate45_netlist.v # Synthesized Gate-Level Netlist
+├── docs/                       # Architectural Documentation & Diagrams
+│   ├── ARCHITECTURE.md         # Detailed microarchitectural specification
+│   └── images/
+│       ├── apex_tpu_architecture.png # Microarchitecture block diagram
+│       └── gen_architecture_diagram.py # Diagram generator script
+├── gui_app.py                  # Desktop EDA Workbench GUI (Tkinter + PIL)
+├── Launch_EDA_Workbench.bat    # One-click desktop GUI launcher
+├── view_waves.bat              # One-click GTKWave launcher
+└── README.md                   # Project documentation
 ```
 
 ---
