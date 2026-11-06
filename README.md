@@ -11,7 +11,7 @@ Apex-TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware ac
 
 ---
 
-## 🏛️ Physical Silicon Tapeout & GDSII Signoff (Nangate 45nm)
+## Physical Silicon Layout & GDSII (Nangate 45nm)
 
 <p align="center">
   <img src="docs/apex_tpu_top_layout.png" alt="Apex-TPU Full-Die Layout" width="49%">
