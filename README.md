@@ -7,7 +7,7 @@ This TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware ac
 ## Physical Silicon Layout & GDSII (Nangate 45nm)
 
 <p align="center">
-  <img src="docs/apex_tpu_top_layout.png" alt="TPU Full-Die Layout" width="49%">
+  <img src="docs/apex_tpu_top_layout.png?v=2" alt="TPU Full-Die Layout" width="49%">
   <img src="docs/systolic_array_layout.png" alt="Systolic Array Core Layout" width="49%">
 </p>
 <p align="center"><em>Full-Die Tapeout Layouts (Rendered via KLayout). Left: Full TPU Accelerator Die (179,209 placed cells, 723×723 µm, 578 mW). Right: Dedicated 8×8 Systolic Array Core (46,271 cells, 355×355 µm, 142.6 mW).</em></p>
