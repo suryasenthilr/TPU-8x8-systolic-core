@@ -7,10 +7,14 @@ This TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware ac
 ## Physical Silicon Layout & GDSII (Nangate 45nm)
 
 <p align="center">
-  <img src="docs/apex_tpu_top_layout.png?v=2" alt="TPU Full-Die Layout" width="49%">
-  <img src="docs/systolic_array_layout.png" alt="Systolic Array Core Layout" width="49%">
+  <img src="docs/apex_tpu_top_layout.png?v=3" alt="Full TPU Accelerator Die Physical Layout" width="70%">
 </p>
-<p align="center"><em>Full-Die Tapeout Layouts (Rendered via KLayout). Left: Full TPU Accelerator Die (179,209 placed cells, 723×723 µm, 578 mW). Right: Dedicated 8×8 Systolic Array Core (46,271 cells, 355×355 µm, 142.6 mW).</em></p>
+<p align="center"><em>Full TPU Accelerator Die Tapeout Layout (179,209 placed cells, 723×723 µm, 578 mW signoff in OpenROAD).</em></p>
+
+<p align="center">
+  <img src="docs/systolic_array_layout.png?v=3" alt="Dedicated 8x8 Systolic Array Sub-Core Layout" width="70%">
+</p>
+<p align="center"><em>Dedicated 8×8 Systolic Array Sub-Core Layout (46,271 placed cells, 355×355 µm, 142.6 mW signoff in OpenROAD).</em></p>
 
 | Physical Signoff Metric | Full TPU Top Core | Systolic Array Sub-Core | Signoff Engine |
 | :--- | :--- | :--- | :--- |
@@ -123,82 +127,11 @@ Row 7: Expected [   -2    5    0   -1   20    7   15   -1 ] | Hardware [   -2   
 ### Cycle-Accurate Simulation Waveform (GTKWave)
 
 <p align="center">
-  <img src="docs/images/tpu_waveform.png" alt="GTKWave Cycle-Accurate Simulation Waveform" width="100%">
+  <img src="docs/apex_tpu_top_layout.png?v=3" alt="Full TPU Accelerator Die Physical Layout" width="70%">
 </p>
-<p align="center"><em>Cycle-accurate execution waveform in GTKWave showing AXI4 DMA burst streaming, instruction decoding, systolic array execution, and vector quantization writeback.</em></p>
+<p align="center"><em>Full TPU Accelerator Die Tapeout Layout (179,209 placed cells, 723×723 µm, 578 mW signoff in OpenROAD).</em></p>
 
----
-
-## Nangate 45nm ASIC Synthesis Results
-
-Synthesis was performed with Yosys and ABC against the standard Nangate 45nm open-cell library (`NangateOpenCellLibrary_typical.lib`).
-
-| Metric | Result |
-| :--- | :--- |
-| **Technology Node** | Nangate 45nm Open Cell Library (Standard VT) |
-| **Total Standard Cells** | 173,758 cells |
-| **Total Core Silicon Area** | 293,491.37 $\mu m^2$ ($0.293 \text{ mm}^2$) |
-| **Sequential Elements Area** | 121,954.62 $\mu m^2$ (41.55%) |
-| **Total Flip-Flops** | 26,015 FFs (`DFF_X1`: 20,608, `DFFR_X1`: 5,406, `DFFS_X1`: 1) |
-| **NAND2_X1 Area Equivalent** | 0.798 $\mu m^2$ |
-| **Normalized Complexity** | **367,783.7 Gate Equivalents (~367.8 kGE)** |
-| **Target Clock Period** | 10.0 ns (100 MHz) |
-| **Peak Throughput** | 64 MACs/cycle (12.8 GOPs/s @ 100 MHz) |
-
-### Hierarchical Breakdown
-
-| Module | Submodule Function | Cells | Area ($\mu m^2$) | Gate Eq (kGE) | Share |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `unified_buffer` | 2KB Dual-Port Synchronous Scratchpad | 101,442 | 170,000.0 | 213.0 kGE | 57.9% |
-| `systolic_array` | 64 Weight-Stationary PEs | 46,720 | 66,000.0 | 82.7 kGE | 22.5% |
-| `weight_buffer` | 512-bit Tile Shadow Registers + RAM | 15,005 | 36,400.0 | 45.6 kGE | 12.4% |
-| `vector_unit` | VPU: Bias, GELU/ReLU, INT8 Quant | 7,092 | 9,600.0 | 12.0 kGE | 3.3% |
-| `deskew_unit` | 7-Stage Output Column Deskewer | 1,792 | 6,440.0 | 8.1 kGE | 2.2% |
-| `dma_axi_master` | 64-bit AMBA AXI4 Master Controller | 710 | 2,010.0 | 2.5 kGE | 0.7% |
-| `skew_unit` | Diagonal Wavefront Skew Pipeline | 448 | 1,610.0 | 2.0 kGE | 0.5% |
-| `tpu_controller` | CISC Instruction Decoder & FSM | 541 | 1,200.0 | 1.5 kGE | 0.4% |
-| **apex_tpu_top** | **Full Core Accelerator** | **173,758** | **293,491.37** | **367.8 kGE** | **100.0%** |
-
-
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- `iverilog` and `vvp` (Icarus Verilog, SystemVerilog 2012 support)
-- `yosys` (Open-source synthesis suite)
-- `gtkwave` (Waveform viewer)
-- Python 3.8+ (`numpy`, `matplotlib`, `pillow`)
-
-### Running the Verification Testbench
-
-```bash
-# Compile and run testbench
-iverilog -g2012 -o sim/apex_tpu_sim.vvp rtl/*.v sim/tb_apex_tpu.v
-vvp sim/apex_tpu_sim.vvp
-
-# Launch waveform visualization
-gtkwave sim/apex_tpu.vcd sim/apex_tpu.gtkw
-```
-
-### Running ASIC Synthesis
-
-```bash
-yosys -s synth/run_synth_tpu.ys
-```
-
-### Launching the Desktop EDA Workbench
-
-Double-click `Launch_EDA_Workbench.bat` or run:
-
-```bash
-python gui_app.py
-```
-
----
-
-## License
-
-This project is released under the MIT Open Source License.
+<p align="center">
+  <img src="docs/systolic_array_layout.png?v=3" alt="Dedicated 8x8 Systolic Array Sub-Core Layout" width="70%">
+</p>
+<p align="center"><em>Dedicated 8×8 Systolic Array Sub-Core Layout (46,271 placed cells, 355×355 µm, 142.6 mW signoff in OpenROAD).</em></p>
