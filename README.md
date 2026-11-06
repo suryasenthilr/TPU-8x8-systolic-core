@@ -127,6 +127,13 @@ Row 7: Expected [   -2    5    0   -1   20    7   15   -1 ] | Hardware [   -2   
 ==================================================================
 ```
 
+### Cycle-Accurate Simulation Waveform (GTKWave)
+
+<p align="center">
+  <img src="docs/images/tpu_waveform.png" alt="GTKWave Cycle-Accurate Simulation Waveform" width="100%">
+</p>
+<p align="center"><em>Cycle-accurate execution waveform in GTKWave showing AXI4 DMA burst streaming, instruction decoding, systolic array execution, and vector quantization writeback.</em></p>
+
 ---
 
 ## Nangate 45nm ASIC Synthesis Results
