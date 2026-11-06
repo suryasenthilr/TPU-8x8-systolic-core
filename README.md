@@ -1,4 +1,4 @@
-# TPU: 8├ù8 Systolic Tensor Core
+# TPU: 8×8 Systolic Tensor Core
 
 This TPU is a synthesizable 2D Systolic Tensor Processing Unit (TPU) hardware accelerator core implementing a Weight-Stationary (WS) spatial dataflow for integer matrix multiplication (GEMM) and Transformer inference workloads. Designed in SystemVerilog/Verilog-2005, the architecture features an $8 \times 8$ grid of 64 multiply-accumulate Processing Elements (PEs), dedicated hardware diagonal skewing and deskewing units, a 2KB true dual-port Unified Activation Buffer (UB), an autonomous 64-bit AMBA AXI4 Master DMA burst engine, and a Vector Processing Unit (VPU) supporting Piecewise Linear Transformer GELU and dynamic INT8 quantization with symmetric saturation.
 
